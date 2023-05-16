@@ -19,6 +19,31 @@ go build
 ulimit -n 100000 && ./utxo-indexer
 ```
 
+# 配置文件
+batch_size是批量存储的阈值(累计达到该值进行存储 len_vin+len_vout),block_chan_buf是在存储是继续拉取block_chan_buf个区块数据;
+需要将这两个值合理设置，设置太大会很吃内存
+```yaml
+server:
+  host: 0.0.0.0
+  port: 3000
+
+log_level: debug
+
+badger_db:
+  directory: ./tmp
+
+rpc:
+  url: 127.0.0.1:8332
+  user: btc
+  password: btc2022
+
+indexer:
+  batch_size: 1000000
+  block_chan_buf: 1000
+
+```
+
+
 # 接口
 ## /utxo 
 - request
