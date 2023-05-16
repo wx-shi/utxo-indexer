@@ -1,5 +1,5 @@
 # UTXO Indexer
-该项目用于查询BTC地址余额、UTXO,可快速将btc utxo数据存储完成
+该项目用于查询BTC地址余额、UTXO,可快速将btc utxo数据存储完成,存储使用了badger db
 
 # 适用场景
 - BTC节点只用于数据查询，不能使用节点自带钱包工具

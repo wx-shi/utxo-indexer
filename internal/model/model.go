@@ -12,10 +12,7 @@ type UTXO struct {
 
 type UseUTXO struct {
 	btcjson.Vin
-	Use struct {
-		Hash  string
-		Index int
-	}
+	Use UseInfo
 }
 type UseInfo struct {
 	Hash  string
