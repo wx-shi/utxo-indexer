@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -17,10 +18,19 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	flagconf string
+)
+
+func init() {
+	flag.StringVar(&flagconf, "conf", "./config.yaml", "config path, eg: -conf config.yaml")
+}
+
 func main() {
+	flag.Parse()
 
 	// Load configuration
-	cfg, err := config.LoadConfig("config.yaml")
+	cfg, err := config.LoadConfig(flagconf)
 	if err != nil {
 		fmt.Printf("Error loading config: %v\n", err)
 		os.Exit(1)
