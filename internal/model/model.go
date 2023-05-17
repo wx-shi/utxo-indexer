@@ -34,3 +34,8 @@ type UTXOReply struct {
 	Balance string `json:"balance"`
 	Utxos   []UTXO `json:"utxos"`
 }
+
+type HeightReply struct {
+	StoreHeight int64 `json:"store_height"`
+	NodeHeight  int64 `json:"node_height"`
+}

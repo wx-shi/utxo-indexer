@@ -153,7 +153,7 @@ func (idx *Indexer) scanTxByBlock(height int64) error {
 		Vouts:  vouts,
 	}
 
-	idx.logger.Debug("Scan Info", zap.Int64("height", height), zap.Int("tx_len", len(btxs.Tx)), zap.Duration("ttl", time.Since(startTime)))
+	idx.logger.Debug("Scan::Info", zap.Int64("height", height), zap.Int("tx_len", len(btxs.Tx)), zap.Duration("ttl", time.Since(startTime)))
 	return nil
 }
 

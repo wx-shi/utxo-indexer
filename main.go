@@ -61,7 +61,7 @@ func main() {
 	indexer.Sync()
 
 	// Start HTTP server
-	httpServer := server.NewServer(cfg.Server, logger, badgerDB)
+	httpServer := server.NewServer(cfg.Server, logger, badgerDB, btcClient)
 	httpServer.Run()
 
 	// Wait for signal

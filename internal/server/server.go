@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/gin-gonic/gin"
 	"github.com/wx-shi/utxo-indexer/internal/config"
 	"github.com/wx-shi/utxo-indexer/internal/db"
@@ -32,16 +33,18 @@ type Server struct {
 	conf   *config.ServerConfig
 	logger *zap.Logger
 	db     *db.BadgerDB
+	rpc    *rpcclient.Client
 	engine *gin.Engine
 	hs     *http.Server
 }
 
-func NewServer(conf *config.ServerConfig, logger *zap.Logger, db *db.BadgerDB) *Server {
+func NewServer(conf *config.ServerConfig, logger *zap.Logger, db *db.BadgerDB, rpc *rpcclient.Client) *Server {
 
 	s := &Server{
 		conf:   conf,
 		logger: logger,
 		db:     db,
+		rpc:    rpc,
 	}
 
 	s.initGin()
@@ -54,6 +57,7 @@ func (s *Server) initGin() {
 	engine.Use(pkg.LogMiddleware(s.logger), pkg.CORSMiddleware(), gin.Recovery())
 
 	engine.POST("utxo", s.utxoHandle())
+	engine.POST("height", s.heightHandle())
 	s.engine = engine
 }
 
