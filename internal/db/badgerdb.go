@@ -29,8 +29,8 @@ func NewBadgerDB(config *config.BadgerDBConfig, logger *zap.Logger) (*BadgerDB, 
 		WithLevelSizeMultiplier(20).    // 调整级别大小乘数以减少文件合并
 		WithNumMemtables(10).           // 增加内存表数量，以减少磁盘写入
 		WithDetectConflicts(false).     // 如果不需要事务冲突检测，禁用它以提高写入性能
-		WithCompression(options.ZSTD)   //使用Snappy压缩以减少存储空间
-
+		WithCompression(options.ZSTD).  //使用Snappy压缩以减少存储空间
+		WithLoggingLevel(badger.WARNING)
 	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, err

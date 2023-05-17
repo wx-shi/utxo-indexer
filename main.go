@@ -78,9 +78,4 @@ func main() {
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
 		logger.Fatal("Error shutting down HTTP server", zap.Error(err))
 	}
-
-	// Shutdown Badger DB
-	if err := badgerDB.Close(); err != nil {
-		logger.Fatal("Error shutting down badger db", zap.Error(err))
-	}
 }
