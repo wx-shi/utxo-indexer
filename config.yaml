@@ -5,7 +5,7 @@ server:
 log_level: debug
 
 badger_db:
-  directory: ./tmp
+  directory: /app/data
 
 rpc:
   url: 127.0.0.1:8332
