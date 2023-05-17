@@ -72,6 +72,8 @@ func (i *Indexer) scan() {
 				continue
 			}
 
+			i.isHistoryScanFinish = false
+
 			if err := i.scanByHeightRange(i.scanHeight, nheight); err != nil {
 				i.logger.Error("scanByHeightRange", zap.Error(err))
 				continue
@@ -125,7 +127,8 @@ func (idx *Indexer) scanTxByBlock(height int64) error {
 		}
 		for i, vout := range tx.Vout {
 			switch vout.ScriptPubKey.Type {
-			case txscript.NonStandardTy.String(), txscript.NullDataTy.String():
+			case txscript.NonStandardTy.String(),
+				txscript.NullDataTy.String():
 				continue
 			default:
 				address, err := pkg.GetAddressByScriptPubKeyResult(vout.ScriptPubKey)
@@ -158,8 +161,8 @@ func (idx *Indexer) scanTxByBlock(height int64) error {
 }
 
 func (i *Indexer) store() {
-	vins := make([]model.UseUTXO, 0, 100000)
-	vouts := make([]model.UTXO, 0, 100000)
+	vins := make([]model.UseUTXO, 0, 1000000)
+	vouts := make([]model.UTXO, 0, 1000000)
 	var lastHeight int64
 	for {
 		select {
@@ -172,8 +175,8 @@ func (i *Indexer) store() {
 			if i.isHistoryScanFinish {
 				//直接存储
 				if err := i.db.Store(vins, vouts, lastHeight); err == nil {
-					vins = make([]model.UseUTXO, 0, 100000)
-					vouts = make([]model.UTXO, 0, 100000)
+					vins = make([]model.UseUTXO, 0, 1000000)
+					vouts = make([]model.UTXO, 0, 1000000)
 				}
 				continue
 			}
@@ -181,8 +184,8 @@ func (i *Indexer) store() {
 		//如果10w个utxo进行存储
 		if len(vins)+len(vouts) >= int(i.conf.BatchSize) {
 			if err := i.db.Store(vins, vouts, lastHeight); err == nil {
-				vins = make([]model.UseUTXO, 0, 100000)
-				vouts = make([]model.UTXO, 0, 100000)
+				vins = make([]model.UseUTXO, 0, 1000000)
+				vouts = make([]model.UTXO, 0, 1000000)
 			}
 		}
 	}
