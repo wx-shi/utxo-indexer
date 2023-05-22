@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/golang/protobuf/proto"
 	"github.com/scylladb/go-set/strset"
+	"strconv"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
@@ -230,7 +231,11 @@ func (db *BadgerDB) parseUtxo(vins []model.In, vouts []model.Out) (map[string]*U
 			if err != badger.ErrKeyNotFound {
 				var value float64
 				if err := bitem.Value(func(val []byte) error {
-					value = pkg.BytesToFloat64(val)
+					pf, err := strconv.ParseFloat(string(val), 10)
+					if err != nil {
+						return err
+					}
+					value = pf
 					return nil
 				}); err != nil {
 					return err
@@ -281,7 +286,7 @@ func (db *BadgerDB) batchStore(um map[string]*UtxoInfo, abm map[string]decimal.D
 
 	for addr, amount := range abm {
 		key := addressBalanceKeyPrefix + addr
-		if err := wb.Set([]byte(key), pkg.Float64ToBytes(amount.InexactFloat64())); err != nil {
+		if err := wb.Set([]byte(key), []byte(amount.StringFixed(8))); err != nil {
 			return err
 		}
 	}
