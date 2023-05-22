@@ -1,10 +1,11 @@
 package db
 
 import (
-	"github.com/golang/protobuf/proto"
-	"github.com/scylladb/go-set/strset"
 	"strconv"
 	"time"
+
+	"github.com/scylladb/go-set/strset"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
@@ -85,8 +86,12 @@ func (db *BadgerDB) GetUTXOByAddress(address string) ([]string, string, error) {
 		if err == badger.ErrKeyNotFound {
 			return nil
 		}
-		_ = bitem.Value(func(val []byte) error {
-			amonut = decimal.NewFromFloat(pkg.BytesToFloat64(val))
+		err = bitem.Value(func(val []byte) error {
+			pf, err := strconv.ParseFloat(string(val), 64)
+			if err != nil {
+				return err
+			}
+			amonut = decimal.NewFromFloat(pf)
 			return nil
 		})
 
@@ -198,22 +203,25 @@ func (db *BadgerDB) parseUtxo(vins []model.In, vouts []model.Out) (map[string]*U
 			if err != nil && err != badger.ErrKeyNotFound {
 				return err
 			}
-			info := &UtxoInfo{}
-			if err = item.Value(func(val []byte) error {
-				return proto.Unmarshal(val, info)
-			}); err != nil {
-				return err
-			}
-			ui, _ := um[key]
-			ui.Address = info.Address
-			ui.Value = info.Value
-			um[key] = ui
+			if err != badger.ErrKeyNotFound {
+				info := &UtxoInfo{}
+				if err = item.Value(func(val []byte) error {
+					return proto.Unmarshal(val, info)
+				}); err != nil {
+					return err
+				}
+				ui := um[key]
+				ui.Address = info.Address
+				ui.Value = info.Value
+				um[key] = ui
 
-			//移除地址utxo集合
-			addAddressUtxo(adum, ui.Address, key)
-			//地址余额变动处理
-			updateBalance(abm, ui.Address, -ui.Value)
-			am[ui.Address] = struct{}{}
+				//移除地址utxo集合
+				addAddressUtxo(adum, ui.Address, key)
+				//地址余额变动处理
+				updateBalance(abm, ui.Address, -ui.Value)
+				am[ui.Address] = struct{}{}
+			}
+
 		}
 		return nil
 	}); err != nil {
@@ -231,7 +239,7 @@ func (db *BadgerDB) parseUtxo(vins []model.In, vouts []model.Out) (map[string]*U
 			if err != badger.ErrKeyNotFound {
 				var value float64
 				if err := bitem.Value(func(val []byte) error {
-					pf, err := strconv.ParseFloat(string(val), 10)
+					pf, err := strconv.ParseFloat(string(val), 64)
 					if err != nil {
 						return err
 					}
