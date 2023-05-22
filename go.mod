@@ -6,6 +6,7 @@ require (
 	github.com/btcsuite/btcd v0.23.4
 	github.com/dgraph-io/badger/v4 v4.1.0
 	github.com/gin-gonic/gin v1.9.0
+	github.com/scylladb/go-set v1.0.2
 	github.com/shopspring/decimal v1.3.1
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.3.0
@@ -34,7 +35,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
-	github.com/golang/protobuf v1.5.0 // indirect
+	github.com/golang/protobuf v1.5.0
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v1.12.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -56,6 +57,6 @@ require (
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

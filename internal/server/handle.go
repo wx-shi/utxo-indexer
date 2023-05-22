@@ -15,7 +15,7 @@ func (s *Server) utxoHandle() func(ctx *gin.Context) {
 			return
 		}
 
-		utxos, amout, err := s.db.GetUTXOByAddress(req.Address, true)
+		utxos, amout, err := s.db.GetUTXOByAddress(req.Address)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"code": http.StatusInternalServerError,
