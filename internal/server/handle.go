@@ -15,7 +15,7 @@ func (s *Server) utxoHandle() func(ctx *gin.Context) {
 			return
 		}
 
-		utxos, amout, err := s.db.GetUTXOByAddress(req.Address)
+		reply, err := s.db.GetUTXOByAddress(req.Address, req.Page, req.PageSize)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"code": http.StatusInternalServerError,
@@ -24,10 +24,7 @@ func (s *Server) utxoHandle() func(ctx *gin.Context) {
 		} else {
 			ctx.JSON(http.StatusOK, gin.H{
 				"code": http.StatusOK,
-				"data": model.UTXOReply{
-					Balance: amout,
-					Utxos:   utxos,
-				},
+				"data": reply,
 			})
 		}
 	}

@@ -30,7 +30,9 @@ type Out struct {
 }
 
 type UTXORequest struct {
-	Address string `json:"address"`
+	Address  string `json:"address"`
+	Page     int    `json:"page"`
+	PageSize int    `json:"page_size"`
 }
 
 type UTXO struct {
