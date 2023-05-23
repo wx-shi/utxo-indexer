@@ -14,6 +14,9 @@ func (s *Server) utxoHandle() func(ctx *gin.Context) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		if req.PageSize == 0 {
+			req.PageSize = 50
+		}
 
 		reply, err := s.db.GetUTXOByAddress(req.Address, req.Page, req.PageSize)
 		if err != nil {
