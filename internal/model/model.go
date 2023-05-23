@@ -33,9 +33,18 @@ type UTXORequest struct {
 	Address string `json:"address"`
 }
 
+type UTXO struct {
+	TxID  string `json:"tx_id"`
+	Index int    `json:"index"`
+	Value string `json:"value"`
+}
+
 type UTXOReply struct {
-	Balance string   `json:"balance"`
-	Utxos   []string `json:"utxos"`
+	Balance   string  `json:"balance"`
+	Page      int     `json:"page"`
+	PageSize  int     `json:"page_size"`
+	TotalSize int     `json:"total_size"`
+	Utxos     []*UTXO `json:"utxos"`
 }
 
 type HeightReply struct {

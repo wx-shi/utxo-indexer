@@ -1,7 +1,10 @@
 package db
 
 import (
+	"context"
+	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/scylladb/go-set/strset"
@@ -20,6 +23,7 @@ const (
 	addressBalanceKeyPrefix = "ab:"
 	addressUtxoKeyPrefix    = "au:"
 	defaultMapCap           = 10000
+	StoreHeight             = "store::height"
 )
 
 // BadgerDB is a wrapper around the badger.DB instance.
@@ -31,11 +35,11 @@ type BadgerDB struct {
 // NewBadgerDB creates a new BadgerDB instance.
 func NewBadgerDB(config *config.BadgerDBConfig, logger *zap.Logger) (*BadgerDB, error) {
 	opts := badger.DefaultOptions(config.Directory).
-		WithMemTableSize(256 << 20).     //调整内存表大小
-		WithBlockCacheSize(2000 << 20).  //调整块缓存大小
-		WithLevelSizeMultiplier(20).     // 调整级别大小乘数以减少文件合并
-		WithNumMemtables(10).            // 增加内存表数量，以减少磁盘写入
-		WithDetectConflicts(false).      // 如果不需要事务冲突检测，禁用它以提高写入性能
+		WithMemTableSize(256 << 20).    //调整内存表大小
+		WithBlockCacheSize(2000 << 20). //调整块缓存大小
+		WithLevelSizeMultiplier(20).    // 调整级别大小乘数以减少文件合并
+		WithNumMemtables(10).           // 增加内存表数量，以减少磁盘写入
+		//WithDetectConflicts(false).      // 如果不需要事务冲突检测，禁用它以提高写入性能
 		WithCompression(options.Snappy). //使用Snappy压缩以减少存储空间
 		WithLoggingLevel(badger.WARNING)
 	db, err := badger.Open(opts)
@@ -49,7 +53,22 @@ func NewBadgerDB(config *config.BadgerDBConfig, logger *zap.Logger) (*BadgerDB, 
 	}, nil
 }
 
-const StoreHeight = "store::height"
+func (db *BadgerDB) GC(ctx context.Context) {
+	go func() {
+		ticker := time.NewTicker(20 * time.Minute)
+		for {
+			select {
+			case <-ticker.C:
+				if err := db.RunValueLogGC(0.1); err != nil &&
+					err != badger.ErrNoRewrite && err != badger.ErrRejected {
+					panic(err)
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+}
 
 func (db *BadgerDB) GetStoreHeight() (int64, error) {
 	var height int64
@@ -71,12 +90,15 @@ func (db *BadgerDB) GetStoreHeight() (int64, error) {
 	return height, err
 }
 
-func (db *BadgerDB) GetUTXOByAddress(address string) ([]string, string, error) {
-	utxos := make([]string, 0, 10)
-	var amonut decimal.Decimal
+func (db *BadgerDB) GetUTXOByAddress(address string, page int, pageSize int) (*model.UTXOReply, error) {
 
 	abKey := addressBalanceKeyPrefix + address
 	auKey := addressUtxoKeyPrefix + address
+
+	reply := &model.UTXOReply{
+		Page:     page,
+		PageSize: pageSize,
+	}
 	err := db.View(func(txn *badger.Txn) error {
 		//获取余额
 		bitem, err := txn.Get([]byte(abKey))
@@ -91,7 +113,7 @@ func (db *BadgerDB) GetUTXOByAddress(address string) ([]string, string, error) {
 			if err != nil {
 				return err
 			}
-			amonut = decimal.NewFromFloat(pf)
+			reply.Balance = fmt.Sprintf("%.8f", pf)
 			return nil
 		})
 
@@ -110,11 +132,46 @@ func (db *BadgerDB) GetUTXOByAddress(address string) ([]string, string, error) {
 			return err
 		}
 
-		utxos = us.Members
+		reply.TotalSize = len(us.Members)
+		uarr := pkg.Paginate(us.Members, page, pageSize)
+		utxos := make([]*model.UTXO, 0, len(uarr))
+
+		for _, ukey := range uarr {
+			keyArr := strings.Split(ukey, ":")
+			if len(keyArr) != 3 {
+				return fmt.Errorf("invalid key:%s", ukey)
+			}
+			item, err := txn.Get([]byte(ukey))
+			if err != nil {
+				return err
+			}
+			info := &UtxoInfo{}
+			if err := item.Value(func(val []byte) error {
+				return proto.Unmarshal(val, info)
+			}); err != nil {
+				return err
+			}
+			txid := keyArr[1]
+			index, err := strconv.Atoi(keyArr[2])
+			if err != nil {
+				return fmt.Errorf("invalid key:%s", ukey)
+			}
+
+			if info.Address != address {
+				return fmt.Errorf("data anomalies key:%s value:%v", ukey, info)
+			}
+			utxos = append(utxos, &model.UTXO{
+				TxID:  txid,
+				Index: index,
+				Value: fmt.Sprintf("%.8f", info.Value),
+			})
+		}
+
+		reply.Utxos = utxos
 		return nil
 	})
 
-	return utxos, amonut.StringFixed(8), err
+	return reply, err
 }
 
 // store 存储
