@@ -3,20 +3,19 @@ package db
 import (
 	"context"
 	"fmt"
-	"github.com/dgraph-io/badger/v4"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/scylladb/go-set/strset"
-	"google.golang.org/protobuf/proto"
-
+	"github.com/dgraph-io/badger/v4"
 	"github.com/dgraph-io/badger/v4/options"
+	"github.com/scylladb/go-set/strset"
 	"github.com/shopspring/decimal"
 	"github.com/wx-shi/utxo-indexer/internal/config"
 	"github.com/wx-shi/utxo-indexer/internal/model"
 	"github.com/wx-shi/utxo-indexer/pkg"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
