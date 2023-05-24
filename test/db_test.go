@@ -1,14 +1,12 @@
 package test
 
 import (
-	"fmt"
-	"github.com/btcsuite/btcd/rpcclient"
-	"github.com/dgraph-io/badger/v4"
-	"github.com/shopspring/decimal"
-	"go.uber.org/zap"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/dgraph-io/badger/v4"
+	"github.com/shopspring/decimal"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/wx-shi/utxo-indexer/internal/config"
@@ -104,45 +102,44 @@ func TestAmount(t *testing.T) {
 					return err
 				}
 				if u.Spend != nil {
-					fmt.Println("spend")
 					continue
 				}
 				amount = amount.Add(decimal.NewFromFloat(u.Value))
 			}
 
 			if a1.StringFixed(8) != amount.StringFixed(8) {
-				panic(fmt.Sprintf("%s 余额异常", addr))
+				t.Fatalf("%s 余额异常", addr)
 			}
-			fmt.Printf("%s %s %s\n", addr, a1.StringFixed(8), amount.StringFixed(8))
+			t.Logf("%s %s %s\n", addr, a1.StringFixed(8), amount.StringFixed(8))
 		}
 		return nil
 	})
 }
 
-func TestBlock(t *testing.T) {
-	// Initialize Bitcoin JSON-RPC client
-	btcClient, err := rpcclient.New(&rpcclient.ConnConfig{
-		Host:         "192.168.0.21:8332",
-		User:         "btc",
-		Pass:         "btc2022",
-		HTTPPostMode: true, // Bitcoin core only supports HTTP POST mode
-		DisableTLS:   true, // Bitcoin core does not provide TLS by default
-	}, nil)
-	if err != nil {
-		logger.Fatal("Error initializing Bitcoin RPC client", zap.Error(err))
-	}
+// func TestBlock(t *testing.T) {
+// 	// Initialize Bitcoin JSON-RPC client
+// 	btcClient, err := rpcclient.New(&rpcclient.ConnConfig{
+// 		Host:         "192.168.0.21:8332",
+// 		User:         "btc",
+// 		Pass:         "btc2022",
+// 		HTTPPostMode: true, // Bitcoin core only supports HTTP POST mode
+// 		DisableTLS:   true, // Bitcoin core does not provide TLS by default
+// 	}, nil)
+// 	if err != nil {
+// 		logger.Fatal("Error initializing Bitcoin RPC client", zap.Error(err))
+// 	}
 
-	hash, _ := btcClient.GetBlockHash(486194)
-	res1, _ := btcClient.GetBlockVerbose(hash)
+// 	hash, _ := btcClient.GetBlockHash(486194)
+// 	res1, _ := btcClient.GetBlockVerbose(hash)
 
-	res, _ := btcClient.GetBlockVerboseTx(hash)
+// 	res, _ := btcClient.GetBlockVerboseTx(hash)
 
-	if len(res.Tx) == len(res1.Tx) {
-		fmt.Println("一样")
-	}
-	for _, tx := range res.Tx {
-		if len(tx.BlockHash) > 0 {
-			fmt.Println(tx.Txid)
-		}
-	}
-}
+// 	if len(res.Tx) == len(res1.Tx) {
+// 		fmt.Println("一样")
+// 	}
+// 	for _, tx := range res.Tx {
+// 		if len(tx.BlockHash) > 0 {
+// 			fmt.Println(tx.Txid)
+// 		}
+// 	}
+// }
