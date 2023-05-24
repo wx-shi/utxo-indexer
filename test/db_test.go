@@ -3,13 +3,13 @@ package test
 import (
 	"fmt"
 	"github.com/btcsuite/btcd/rpcclient"
+	"github.com/dgraph-io/badger/v4"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/dgraph-io/badger/v3"
 	"github.com/golang/protobuf/proto"
 	"github.com/wx-shi/utxo-indexer/internal/config"
 	"github.com/wx-shi/utxo-indexer/internal/db"

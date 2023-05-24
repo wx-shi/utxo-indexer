@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
-	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v4"
 	"strconv"
 	"strings"
 	"time"
@@ -11,7 +11,7 @@ import (
 	"github.com/scylladb/go-set/strset"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/dgraph-io/badger/v3/options"
+	"github.com/dgraph-io/badger/v4/options"
 	"github.com/shopspring/decimal"
 	"github.com/wx-shi/utxo-indexer/internal/config"
 	"github.com/wx-shi/utxo-indexer/internal/model"
