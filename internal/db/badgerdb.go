@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgraph-io/badger/v4"
-	"github.com/dgraph-io/badger/v4/options"
+	"github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v3/options"
 	"github.com/scylladb/go-set/strset"
 	"github.com/shopspring/decimal"
 	"github.com/wx-shi/utxo-indexer/internal/config"
@@ -68,6 +68,70 @@ func (db *BadgerDB) GC(ctx context.Context) {
 			}
 		}
 	}()
+}
+
+func (db *BadgerDB) FixBalance() error {
+	balMap := make(map[string]decimal.Decimal, 1000000)
+	if err := db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+
+		prefix := []byte(addressUtxoKeyPrefix)
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			item := it.Item()
+			addr := strings.Split(string(item.Key()), addressUtxoKeyPrefix)[1]
+			ss := &StringSet{}
+			err := item.Value(func(v []byte) error {
+				return proto.Unmarshal(v, ss)
+			})
+			if err != nil {
+				return err
+			}
+			bal := decimal.Decimal{}
+			for _, ukey := range ss.Members {
+				uitem, err := txn.Get([]byte(ukey))
+				if err != nil {
+					return err
+				}
+				ui := &UtxoInfo{}
+				if err := uitem.Value(func(val []byte) error {
+					return proto.Unmarshal(val, ui)
+				}); err != nil {
+					return err
+				}
+				bal = bal.Add(decimal.NewFromFloat(ui.Value))
+			}
+			balMap[addressBalanceKeyPrefix+addr] = bal
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	// store
+	// 创建一个WriteBatch
+	wb := db.NewWriteBatch()
+	defer wb.Cancel()
+
+	for key, bal := range balMap {
+		if bal.Equal(decimal.Decimal{}) {
+			// 删除key
+			if err := wb.Delete([]byte(key)); err != nil {
+				return err
+			}
+		} else {
+			val := bal.StringFixed(8)
+			if err := wb.Set([]byte(key), []byte(val)); err != nil {
+				return err
+			}
+		}
+	}
+
+	// 提交WriteBatch，将数据写入数据库
+	if err := wb.Flush(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (db *BadgerDB) GetStoreHeight() (int64, error) {

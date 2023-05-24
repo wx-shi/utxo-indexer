@@ -17,5 +17,6 @@ RUN cd src \
     && rm -rf src 
 EXPOSE 3000
 VOLUME /app/conf
+VOLUME /app/data
 
 CMD ["/app/utxo-indexer", "-conf", "/app/conf/config.yaml"]

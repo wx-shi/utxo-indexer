@@ -3,6 +3,7 @@ package pkg
 import (
 	"bytes"
 	"io/ioutil"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,12 +21,22 @@ func LogMiddleware(logger *zap.Logger) gin.HandlerFunc {
 
 		c.Next()
 		duration := time.Since(start)
-		logger.Info(path,
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.ByteString("body", data),
-			zap.Duration("duration", duration))
+		if c.Writer.Status() != http.StatusOK {
+			logger.Error(path,
+				zap.Int("status", c.Writer.Status()),
+				zap.String("method", c.Request.Method),
+				zap.String("path", path),
+				zap.ByteString("body", data),
+				zap.Duration("duration", duration))
+		} else {
+			logger.Debug(path,
+				zap.Int("status", c.Writer.Status()),
+				zap.String("method", c.Request.Method),
+				zap.String("path", path),
+				zap.ByteString("body", data),
+				zap.Duration("duration", duration))
+		}
+
 	}
 }
 

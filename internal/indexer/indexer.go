@@ -41,6 +41,7 @@ func NewIndexer(ctx context.Context, conf *config.IndexerConfig,
 
 func (i *Indexer) Sync() {
 	i.init()
+	// i.fixBalance()
 	go i.scan()
 	go i.store()
 	return
@@ -55,6 +56,14 @@ func (i *Indexer) init() {
 	i.storeHeight = height
 	i.scanHeight = height + 1
 	i.blockChan = make(chan model.BlockUTXO, i.conf.BlockChanBuf)
+}
+func (i *Indexer) fixBalance() {
+	i.logger.Info("FixBalance::start")
+	start := time.Now()
+	if err := i.db.FixBalance(); err != nil {
+		i.logger.Fatal("fixBalance", zap.Error(err))
+	}
+	i.logger.Info("FixBalance::end", zap.Duration("ttl", time.Since(start)))
 }
 
 func (i *Indexer) scan() {

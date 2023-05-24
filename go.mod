@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/btcsuite/btcd v0.23.4
-	github.com/dgraph-io/badger/v4 v4.1.0
+	github.com/dgraph-io/badger/v3 v3.2103.5
 	github.com/gin-gonic/gin v1.9.0
 	github.com/scylladb/go-set v1.0.2
 	github.com/shopspring/decimal v1.3.1
@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
@@ -29,7 +30,7 @@ require (
 require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/btcsuite/btcd/btcec/v2 v2.1.3 // indirect
-	github.com/btcsuite/btcd/btcutil v1.1.0 // indirect
+	github.com/btcsuite/btcd/btcutil v1.1.0
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f // indirect
 	github.com/btcsuite/go-socks v0.0.0-20170105172521-4720035b7bfd // indirect
