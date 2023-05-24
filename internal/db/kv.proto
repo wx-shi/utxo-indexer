@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package db;
+option go_package = "./;db";
+
+
+//key u:txid:index
+//value
+message UtxoInfo {
+  string address = 1;
+  double value = 2;
+  Spend spend = 3;//TODO 是否记录已花费
+}
+
+message Spend {
+  string txid = 1;
+  uint32 index = 2;
+}
+
+
+//key a:address
+//value string集合
+message StringSet {
+  repeated string members = 1;
+}
+
+//key b:address
+//value amount

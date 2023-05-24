@@ -2,6 +2,7 @@ package indexer
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/btcsuite/btcd/rpcclient"
@@ -108,22 +109,23 @@ func (idx *Indexer) scanTxByBlock(height int64) error {
 		return err
 	}
 
-	vins := make([]model.UseUTXO, 0, 10000)
-	vouts := make([]model.UTXO, 0, 10000)
+	vins := make([]model.In, 0, 10000)
+	vouts := make([]model.Out, 0, 10000)
 	for _, tx := range btxs.Tx {
 		for i, vin := range tx.Vin {
 			//判断是否为coinbase
 			if len(vin.Coinbase) > 0 || len(vin.Txid) == 0 {
 				continue
 			}
-			utxo := model.UseUTXO{
-				Vin: vin,
-				Use: model.UseInfo{
-					Hash:  tx.Hash,
+			vins = append(vins, model.In{
+				UKey:  fmt.Sprintf("u:%s:%d", vin.Txid, vin.Vout),
+				TxID:  vin.Txid,
+				Index: int(vin.Vout),
+				Spend: &model.Spend{
+					TxID:  tx.Txid,
 					Index: i,
 				},
-			}
-			vins = append(vins, utxo)
+			})
 		}
 		for i, vout := range tx.Vout {
 			switch vout.ScriptPubKey.Type {
@@ -135,18 +137,18 @@ func (idx *Indexer) scanTxByBlock(height int64) error {
 				if err != nil || len(address) == 0 {
 					idx.logger.Error("GetAddressByScriptPubKeyResult",
 						zap.Any("vout", vout),
-						zap.String("txid", tx.Hash),
+						zap.String("txid", tx.Txid),
 						zap.Int("index", i),
 						zap.Error(err))
 					continue
 				}
-				utxo := model.UTXO{
-					Hash:    tx.Hash,
-					Address: address,
+				vouts = append(vouts, model.Out{
+					UKey:    fmt.Sprintf("u:%s:%d", tx.Txid, i),
+					TxID:    tx.Txid,
 					Index:   i,
+					Address: address,
 					Value:   vout.Value,
-				}
-				vouts = append(vouts, utxo)
+				})
 			}
 		}
 	}
@@ -161,8 +163,8 @@ func (idx *Indexer) scanTxByBlock(height int64) error {
 }
 
 func (i *Indexer) store() {
-	vins := make([]model.UseUTXO, 0, 1000000)
-	vouts := make([]model.UTXO, 0, 1000000)
+	vins := make([]model.In, 0, 1000000)
+	vouts := make([]model.Out, 0, 1000000)
 	var lastHeight int64
 	for {
 		select {
@@ -175,8 +177,8 @@ func (i *Indexer) store() {
 			if i.isHistoryScanFinish {
 				//直接存储
 				if err := i.db.Store(vins, vouts, lastHeight); err == nil {
-					vins = make([]model.UseUTXO, 0, 1000000)
-					vouts = make([]model.UTXO, 0, 1000000)
+					vins = make([]model.In, 0, 1000000)
+					vouts = make([]model.Out, 0, 1000000)
 				}
 				continue
 			}
@@ -184,8 +186,8 @@ func (i *Indexer) store() {
 		//如果10w个utxo进行存储
 		if len(vins)+len(vouts) >= int(i.conf.BatchSize) {
 			if err := i.db.Store(vins, vouts, lastHeight); err == nil {
-				vins = make([]model.UseUTXO, 0, 1000000)
-				vouts = make([]model.UTXO, 0, 1000000)
+				vins = make([]model.In, 0, 1000000)
+				vouts = make([]model.Out, 0, 1000000)
 			}
 		}
 	}

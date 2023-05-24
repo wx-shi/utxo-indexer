@@ -1,38 +1,52 @@
 package model
 
-import "github.com/btcsuite/btcd/btcjson"
-
-type UTXO struct {
-	Hash    string  `json:"hash"`
-	Address string  `json:"address"`
-	Index   int     `json:"index"`
-	Value   float64 `json:"value"`
-	Spend   bool    `json:"-"`
+// BlockUTXO 块下的utxo 包含已使用的 已经新产生的
+type BlockUTXO struct {
+	Height int64 `json:"height"`
+	Vins   []In  `json:"vins"`
+	Vouts  []Out `json:"vouts"`
 }
 
-type UseUTXO struct {
-	btcjson.Vin
-	Use UseInfo
+// 花费
+type In struct {
+	UKey  string
+	TxID  string
+	Index int
+	Spend *Spend // txid:index
 }
-type UseInfo struct {
-	Hash  string
+
+type Spend struct {
+	TxID  string
 	Index int
 }
 
-// BlockUTXO 块下的utxo 包含已使用的 已经新产生的
-type BlockUTXO struct {
-	Height int64     `json:"height"`
-	Vins   []UseUTXO `json:"vins"`
-	Vouts  []UTXO    `json:"vouts"`
+// 新入
+type Out struct {
+	UKey    string
+	TxID    string
+	Index   int
+	Address string  `json:"address"`
+	Value   float64 `json:"value"`
 }
 
 type UTXORequest struct {
-	Address string `json:"address"`
+	Address  string `json:"address"`
+	Page     int    `json:"page"`
+	PageSize int    `json:"page_size"`
+}
+
+type UTXO struct {
+	TxID  string `json:"tx_id"`
+	Index int    `json:"index"`
+	Value string `json:"value"`
 }
 
 type UTXOReply struct {
-	Balance string `json:"balance"`
-	Utxos   []UTXO `json:"utxos"`
+	Balance   string  `json:"balance"`
+	Page      int     `json:"page"`
+	PageSize  int     `json:"page_size"`
+	TotalSize int     `json:"total_size"`
+	Utxos     []*UTXO `json:"utxos"`
 }
 
 type HeightReply struct {
