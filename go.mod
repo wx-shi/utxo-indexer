@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/btcsuite/btcd v0.23.4
-	github.com/dgraph-io/badger/v4 v4.1.0
+	github.com/dgraph-io/badger/v3 v3.2103.5
 	github.com/gin-gonic/gin v1.9.0
 	github.com/scylladb/go-set v1.0.2
 	github.com/shopspring/decimal v1.3.1
@@ -21,6 +21,7 @@ require (
 	github.com/btcsuite/go-socks v0.0.0-20170105172521-4720035b7bfd // indirect
 	github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
+	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/decred/dcrd/crypto/blake256 v1.0.0 // indirect

@@ -122,7 +122,7 @@ func (idx *Indexer) scanTxByBlock(height int64) error {
 				TxID:  vin.Txid,
 				Index: int(vin.Vout),
 				Spend: &model.Spend{
-					TxID:  tx.Hash,
+					TxID:  tx.Txid,
 					Index: i,
 				},
 			})
@@ -137,14 +137,14 @@ func (idx *Indexer) scanTxByBlock(height int64) error {
 				if err != nil || len(address) == 0 {
 					idx.logger.Error("GetAddressByScriptPubKeyResult",
 						zap.Any("vout", vout),
-						zap.String("txid", tx.Hash),
+						zap.String("txid", tx.Txid),
 						zap.Int("index", i),
 						zap.Error(err))
 					continue
 				}
 				vouts = append(vouts, model.Out{
-					UKey:    fmt.Sprintf("u:%s:%d", tx.Hash, i),
-					TxID:    tx.Hash,
+					UKey:    fmt.Sprintf("u:%s:%d", tx.Txid, i),
+					TxID:    tx.Txid,
 					Index:   i,
 					Address: address,
 					Value:   vout.Value,

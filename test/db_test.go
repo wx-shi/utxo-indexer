@@ -2,12 +2,14 @@ package test
 
 import (
 	"fmt"
+	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/shopspring/decimal"
+	"go.uber.org/zap"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/dgraph-io/badger/v4"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/golang/protobuf/proto"
 	"github.com/wx-shi/utxo-indexer/internal/config"
 	"github.com/wx-shi/utxo-indexer/internal/db"
@@ -115,4 +117,32 @@ func TestAmount(t *testing.T) {
 		}
 		return nil
 	})
+}
+
+func TestBlock(t *testing.T) {
+	// Initialize Bitcoin JSON-RPC client
+	btcClient, err := rpcclient.New(&rpcclient.ConnConfig{
+		Host:         "192.168.0.21:8332",
+		User:         "btc",
+		Pass:         "btc2022",
+		HTTPPostMode: true, // Bitcoin core only supports HTTP POST mode
+		DisableTLS:   true, // Bitcoin core does not provide TLS by default
+	}, nil)
+	if err != nil {
+		logger.Fatal("Error initializing Bitcoin RPC client", zap.Error(err))
+	}
+
+	hash, _ := btcClient.GetBlockHash(486194)
+	res1, _ := btcClient.GetBlockVerbose(hash)
+
+	res, _ := btcClient.GetBlockVerboseTx(hash)
+
+	if len(res.Tx) == len(res1.Tx) {
+		fmt.Println("一样")
+	}
+	for _, tx := range res.Tx {
+		if len(tx.BlockHash) > 0 {
+			fmt.Println(tx.Txid)
+		}
+	}
 }

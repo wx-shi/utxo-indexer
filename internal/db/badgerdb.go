@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"github.com/dgraph-io/badger/v3"
 	"strconv"
 	"strings"
 	"time"
@@ -10,8 +11,7 @@ import (
 	"github.com/scylladb/go-set/strset"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/dgraph-io/badger/v4"
-	"github.com/dgraph-io/badger/v4/options"
+	"github.com/dgraph-io/badger/v3/options"
 	"github.com/shopspring/decimal"
 	"github.com/wx-shi/utxo-indexer/internal/config"
 	"github.com/wx-shi/utxo-indexer/internal/model"
@@ -56,6 +56,7 @@ func NewBadgerDB(config *config.BadgerDBConfig, logger *zap.Logger) (*BadgerDB, 
 func (db *BadgerDB) GC(ctx context.Context) {
 	go func() {
 		ticker := time.NewTicker(20 * time.Minute)
+		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
@@ -106,6 +107,8 @@ func (db *BadgerDB) GetUTXOByAddress(address string, page int, pageSize int) (*m
 			return err
 		}
 		if err == badger.ErrKeyNotFound {
+			var v float64
+			reply.Balance = fmt.Sprintf("%.8f", v)
 			return nil
 		}
 		err = bitem.Value(func(val []byte) error {
