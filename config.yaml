@@ -8,10 +8,10 @@ badger_db:
   directory: /app/data
 
 rpc:
-  url: 127.0.0.1:8332
+  url: btc_node:8332
   user: btc
   password: btc2022
 
 indexer:
-  batch_size: 10
-  block_chan_buf: 1000
+  batch_size: 1000000
+  block_chan_buf: 100
