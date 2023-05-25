@@ -24,6 +24,7 @@ type Indexer struct {
 	storeHeight         int64
 	blockChan           chan model.BlockUTXO
 	isHistoryScanFinish bool
+	Finish              chan struct{}
 }
 
 func NewIndexer(ctx context.Context, conf *config.IndexerConfig,
@@ -34,6 +35,7 @@ func NewIndexer(ctx context.Context, conf *config.IndexerConfig,
 		logger: logger,
 		rpc:    rpc,
 		db:     db,
+		Finish: make(chan struct{}),
 	}
 }
 
@@ -169,6 +171,7 @@ func (i *Indexer) store() {
 	for {
 		select {
 		case <-i.ctx.Done():
+			close(i.Finish) //确保存储完成后退出
 			return
 		case hUtxos := <-i.blockChan:
 			lastHeight = hUtxos.Height
