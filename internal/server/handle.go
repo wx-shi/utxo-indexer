@@ -7,6 +7,8 @@ import (
 	"github.com/wx-shi/utxo-indexer/internal/model"
 )
 
+const defaultPageSize = 50
+
 func (s *Server) utxoHandle() func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		var req model.UTXORequest
@@ -15,7 +17,7 @@ func (s *Server) utxoHandle() func(ctx *gin.Context) {
 			return
 		}
 		if req.PageSize == 0 {
-			req.PageSize = 50
+			req.PageSize = defaultPageSize
 		}
 
 		reply, err := s.db.GetUTXOByAddress(req.Address, req.Page, req.PageSize)
