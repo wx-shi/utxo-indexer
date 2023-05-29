@@ -57,6 +57,7 @@ func (s *Server) initGin() {
 	engine.Use(pkg.LogMiddleware(s.logger), pkg.CORSMiddleware(), gin.Recovery())
 
 	engine.POST("utxo", s.utxoHandle())
+	engine.POST("utxo_info", s.utxoInfoHandle())
 	engine.POST("height", s.heightHandle())
 	s.engine = engine
 }

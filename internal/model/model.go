@@ -53,3 +53,14 @@ type HeightReply struct {
 	StoreHeight int64 `json:"store_height"`
 	NodeHeight  int64 `json:"node_height"`
 }
+
+type UTXOInfoRequest struct {
+	Keys []string `json:"keys"` //txid:index
+}
+
+type UTXOInfoReply map[string]*UtxoInfo
+
+type UtxoInfo struct {
+	Address string  `json:"address"`
+	Value   float64 `json:"value"`
+}
