@@ -19,6 +19,7 @@ import (
 )
 
 const (
+	utxoKeyPrefix           = "u:"
 	addressBalanceKeyPrefix = "ab:"
 	addressUtxoKeyPrefix    = "au:"
 	defaultMapCap           = 10000
@@ -238,6 +239,39 @@ func (db *BadgerDB) GetUTXOByAddress(address string, page int, pageSize int) (*m
 	})
 
 	return reply, err
+}
+
+func (db *BadgerDB) GetUTXOInfoByKeys(keys []string) (model.UTXOInfoReply, error) {
+	reply := make(model.UTXOInfoReply, len(keys))
+
+	if err := db.View(func(txn *badger.Txn) error {
+		for _, key := range keys {
+			item, err := txn.Get([]byte(utxoKeyPrefix + key))
+			if err != nil && err != badger.ErrKeyNotFound {
+				return err
+			}
+			if err != badger.ErrKeyNotFound {
+				info := &UtxoInfo{}
+				if err := item.Value(func(val []byte) error {
+					return proto.Unmarshal(val, info)
+				}); err != nil {
+					return err
+				}
+				reply[key] = &model.UtxoInfo{
+					Address: info.Address,
+					Value:   info.Value,
+				}
+			} else {
+				reply[key] = nil
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return reply, err
+	}
+
+	return reply, nil
 }
 
 // store 存储

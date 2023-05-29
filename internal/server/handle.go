@@ -63,3 +63,26 @@ func (s *Server) heightHandle() func(ctx *gin.Context) {
 		})
 	}
 }
+
+func (s *Server) utxoInfoHandle() func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		var req model.UTXOInfoRequest
+		if err := ctx.ShouldBindJSON(&req); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		reply, err := s.db.GetUTXOInfoByKeys(req.Keys)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"code": http.StatusInternalServerError,
+				"msg":  err.Error(),
+			})
+		} else {
+			ctx.JSON(http.StatusOK, gin.H{
+				"code": http.StatusOK,
+				"data": reply,
+			})
+		}
+	}
+}
