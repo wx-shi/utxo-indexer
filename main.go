@@ -98,5 +98,4 @@ func main() {
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
 		logger.Fatal("Error shutting down HTTP server", zap.Error(err))
 	}
-	<-indexer.Finish //确保没在存储时退出程序
 }
