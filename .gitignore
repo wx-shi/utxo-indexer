@@ -39,3 +39,6 @@ bin/
 *.swp
 
 tmp
+
+nohup.out
+utxo-indexer
