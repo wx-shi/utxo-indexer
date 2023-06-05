@@ -291,6 +291,9 @@ func (db *BadgerDB) Store(vins []model.In, vouts []model.Out, lastHeight int64) 
 	if err := db.storeLastHeight(lastHeight); err != nil {
 		db.logger.Fatal("storeLastHeight", zap.Error(err))
 	}
+	if err := db.Sync(); err != nil {
+		db.logger.Fatal("BadgerDB::Sync", zap.Error(err))
+	}
 
 	db.logger.Info("Store::Info",
 		zap.Int64("lastHeight", lastHeight),

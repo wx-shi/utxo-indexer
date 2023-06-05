@@ -146,7 +146,8 @@ func (idx *Indexer) scanTxByBlock(height int64) error {
 			default:
 				address, err := pkg.GetAddressByScriptPubKeyResult(vout.ScriptPubKey)
 				if err != nil || len(address) == 0 {
-					idx.logger.Error("GetAddressByScriptPubKeyResult",
+					// todo debug
+					idx.logger.Debug("GetAddressByScriptPubKeyResult",
 						zap.Any("vout", vout),
 						zap.String("txid", tx.Txid),
 						zap.Int("index", i),
