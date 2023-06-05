@@ -13,7 +13,10 @@ func (s *Server) utxoHandle() func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		var req model.UTXORequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusOK, gin.H{
+				"code": http.StatusBadRequest,
+				"msg":  err.Error(),
+			})
 			return
 		}
 		if req.PageSize == 0 {
@@ -70,7 +73,10 @@ func (s *Server) utxoInfoHandle() func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		var req model.UTXOInfoRequest
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusOK, gin.H{
+				"code": http.StatusBadRequest,
+				"msg":  err.Error(),
+			})
 			return
 		}
 
