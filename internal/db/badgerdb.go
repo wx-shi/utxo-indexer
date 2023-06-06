@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/dgraph-io/badger/v3/options"
 	"github.com/scylladb/go-set/strset"
 	"github.com/shopspring/decimal"
 	"github.com/wx-shi/utxo-indexer/internal/config"
@@ -34,15 +33,7 @@ type BadgerDB struct {
 
 // NewBadgerDB creates a new BadgerDB instance.
 func NewBadgerDB(config *config.BadgerDBConfig, logger *zap.Logger) (*BadgerDB, error) {
-	opts := badger.DefaultOptions(config.Directory).
-		WithMemTableSize(256 << 20).    //调整内存表大小
-		WithBlockCacheSize(2000 << 20). //调整块缓存大小
-		WithLevelSizeMultiplier(20).    // 调整级别大小乘数以减少文件合并
-		WithNumMemtables(10).           // 增加内存表数量，以减少磁盘写入
-		//WithDetectConflicts(false).      // 如果不需要事务冲突检测，禁用它以提高写入性能
-		WithCompression(options.Snappy). //使用Snappy压缩以减少存储空间
-		WithLoggingLevel(badger.WARNING)
-	db, err := badger.Open(opts)
+	db, err := badger.Open(DefaultBadgerOptions(config.Directory))
 	if err != nil {
 		return nil, err
 	}
@@ -55,12 +46,12 @@ func NewBadgerDB(config *config.BadgerDBConfig, logger *zap.Logger) (*BadgerDB, 
 
 func (db *BadgerDB) GC(ctx context.Context) {
 	go func() {
-		ticker := time.NewTicker(20 * time.Minute)
+		ticker := time.NewTicker(defaultGCInterval)
 		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
-				if err := db.RunValueLogGC(0.1); err != nil &&
+				if err := db.RunValueLogGC(defualtGCDiscardRatio); err != nil &&
 					err != badger.ErrNoRewrite && err != badger.ErrRejected {
 					panic(err)
 				}
