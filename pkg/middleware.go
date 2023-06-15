@@ -26,14 +26,14 @@ func LogMiddleware(logger *zap.Logger) gin.HandlerFunc {
 				zap.Int("status", c.Writer.Status()),
 				zap.String("method", c.Request.Method),
 				zap.String("path", path),
-				zap.ByteString("body", data),
+				// zap.ByteString("body", data),
 				zap.Duration("duration", duration))
 		} else {
 			logger.Debug(path,
 				zap.Int("status", c.Writer.Status()),
 				zap.String("method", c.Request.Method),
 				zap.String("path", path),
-				zap.ByteString("body", data),
+				// zap.ByteString("body", data),
 				zap.Duration("duration", duration))
 		}
 

@@ -11,6 +11,7 @@ type Config struct {
 	Server   *ServerConfig     `yaml:"server"`
 	LogLevel string            `yaml:"log_level"`
 	BadgerDB *BadgerDBConfig   `yaml:"badger_db"`
+	DB       *DBConfig         `yaml:"db"`
 	RPC      *BitcoinRPCConfig `yaml:"rpc"`
 	Indexer  *IndexerConfig    `yaml:"indexer"`
 }
@@ -24,6 +25,12 @@ type ServerConfig struct {
 // BadgerDBConfig holds the configuration settings for BadgerDB.
 type BadgerDBConfig struct {
 	Directory string `yaml:"directory"`
+}
+
+type DBConfig struct {
+	Name   string `yaml:"name"`
+	Dir    string `yaml:"dir"`
+	DBType string `yaml:"db_type"`
 }
 
 // BitcoinRPCConfig holds the configuration settings for Bitcoin JSON-RPC.

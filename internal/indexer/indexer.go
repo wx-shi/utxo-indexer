@@ -18,7 +18,7 @@ type Indexer struct {
 	ctx                 context.Context
 	logger              *zap.Logger
 	rpc                 *rpcclient.Client
-	db                  *db.BadgerDB
+	db                  *db.DB
 	conf                *config.IndexerConfig
 	scanHeight          int64
 	storeHeight         int64
@@ -28,7 +28,7 @@ type Indexer struct {
 }
 
 func NewIndexer(ctx context.Context, conf *config.IndexerConfig,
-	logger *zap.Logger, rpc *rpcclient.Client, db *db.BadgerDB) *Indexer {
+	logger *zap.Logger, rpc *rpcclient.Client, db *db.DB) *Indexer {
 	return &Indexer{
 		ctx:    ctx,
 		conf:   conf,
@@ -56,14 +56,6 @@ func (i *Indexer) init() {
 	i.storeHeight = height
 	i.scanHeight = height + 1
 	i.blockChan = make(chan model.BlockUTXO, i.conf.BlockChanBuf)
-}
-func (i *Indexer) fixBalance() {
-	i.logger.Info("FixBalance::start")
-	start := time.Now()
-	if err := i.db.FixBalance(); err != nil {
-		i.logger.Fatal("fixBalance", zap.Error(err))
-	}
-	i.logger.Info("FixBalance::end", zap.Duration("ttl", time.Since(start)))
 }
 
 func (i *Indexer) scan() {

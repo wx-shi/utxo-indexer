@@ -41,16 +41,13 @@ func main() {
 	defer logger.Sync()
 
 	// Initialize BadgerDB
-	badgerDB, err := db.NewBadgerDB(cfg.BadgerDB, logger)
+	tmdb, err := db.NewDB(cfg.DB, logger)
 	if err != nil {
-		logger.Fatal("Error initializing BadgerDB", zap.Error(err))
+		logger.Fatal("Error initializing DB", zap.Error(err))
 	}
 	defer func() {
-		if err := badgerDB.Sync(); err != nil {
+		if err := tmdb.Close(); err != nil {
 			logger.Fatal("BadgerDB::Sync", zap.Error(err))
-		}
-		if err := badgerDB.Close(); err != nil {
-			logger.Fatal("BadgerDB::Close", zap.Error(err))
 		}
 	}()
 
@@ -69,18 +66,16 @@ func main() {
 	// Create context for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 
-	badgerDB.GC(ctx)
-
 	// Setup signal handling for graceful shutdown
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
 	// Start UTXO indexer
-	indexer := indexer.NewIndexer(ctx, cfg.Indexer, logger, btcClient, badgerDB)
+	indexer := indexer.NewIndexer(ctx, cfg.Indexer, logger, btcClient, tmdb)
 	indexer.Sync()
 
 	// Start HTTP server
-	httpServer := server.NewServer(cfg.Server, logger, badgerDB, btcClient)
+	httpServer := server.NewServer(cfg.Server, logger, tmdb, btcClient)
 	httpServer.Run()
 
 	// Wait for signal
