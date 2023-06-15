@@ -17,28 +17,28 @@ import (
 const (
 	// readTimeout is the maximum duration for reading the entire
 	// request, including the body.
-	readTimeout = 5 * time.Second
+	readTimeout = 5 * time.Minute
 
 	// writeTimeout is the maximum duration before timing out
 	// writes of the response. It is reset whenever a new
 	// request's header is read.
-	writeTimeout = 15 * time.Second
+	writeTimeout = 5 * time.Minute
 
 	// idleTimeout is the maximum amount of time to wait for the
 	// next request when keep-alives are enabled.
-	idleTimeout = 30 * time.Second
+	idleTimeout = 5 * time.Minute
 )
 
 type Server struct {
 	conf   *config.ServerConfig
 	logger *zap.Logger
-	db     *db.BadgerDB
+	db     *db.DB
 	rpc    *rpcclient.Client
 	engine *gin.Engine
 	hs     *http.Server
 }
 
-func NewServer(conf *config.ServerConfig, logger *zap.Logger, db *db.BadgerDB, rpc *rpcclient.Client) *Server {
+func NewServer(conf *config.ServerConfig, logger *zap.Logger, db *db.DB, rpc *rpcclient.Client) *Server {
 
 	s := &Server{
 		conf:   conf,

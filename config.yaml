@@ -4,8 +4,9 @@ server:
 
 log_level: info
 
-badger_db:
-  directory: /data11t/utxo_idx_db
+db:
+  dir: ./tmp
+  db_type: goleveldb
 
 rpc:
   url: btc_node:8332
@@ -13,5 +14,5 @@ rpc:
   password: btc2022
 
 indexer:
-  batch_size: 1000000
+  batch_size: 100
   block_chan_buf: 100
