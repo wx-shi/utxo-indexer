@@ -47,7 +47,7 @@ func main() {
 	}
 	defer func() {
 		if err := tmdb.Close(); err != nil {
-			logger.Fatal("BadgerDB::Sync", zap.Error(err))
+			logger.Fatal("DB::Close", zap.Error(err))
 		}
 	}()
 
