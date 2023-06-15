@@ -28,7 +28,6 @@ type BadgerDBConfig struct {
 }
 
 type DBConfig struct {
-	Name   string `yaml:"name"`
 	Dir    string `yaml:"dir"`
 	DBType string `yaml:"db_type"`
 }
